@@ -1,0 +1,25 @@
+{
+    "name": "emmelaineglz/orchextra-client-generation",
+    "type": "library",
+    "description": "SDK para Generación de OrchextraClient",
+    "keywords": ["cupones","orchextra","generation"],
+    "homepage": "https://github.com/emmelaineglz/orchextra-client-generation",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Ethel E. Gonzalez",
+            "email": "ethel.gonzalez@gigigo.com.mx"
+        }
+    ],
+    "require": {
+        "guzzlehttp/guzzle": "~6.0",
+        "emmelaineglz/orchextra-client-php": "dev-master",
+        "illuminate/database": "^5.4",
+        "illuminate/support": "^5.4"
+    },
+    "autoload": {
+        "psr-4": {
+            "Gigigo\\Orchextra\\Generation\\": "src"
+        }
+    }
+}
