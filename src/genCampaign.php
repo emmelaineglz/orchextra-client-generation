@@ -67,15 +67,15 @@ class genCampaign {
   public function setWith ($with)
   {
     $arrayS = json_decode($with);
-    foreach ($arrayS as $valor => $key){
-      echo $valor;
-      foreach ($key as $value){
-        echo $value;
+    $filters = '';
+    foreach($arrayS as $key => $values) {
+      $filters .= $key;
+      foreach($values as $item) {
+        $filters .= '.'.$item;
       }
+      $filters .= ',';
     }
-
-    die();
-    $this->with = $with;
+    $this->with = trim($filters,',');
     return $this;
   }
 
