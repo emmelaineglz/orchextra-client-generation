@@ -4,7 +4,7 @@ use Illuminate\Support\Collection as Collection;
 
 use GuzzleHttp\Client;
 
-class genCampaign {
+class Campaigns {
   /**
    * @var string
    */
@@ -23,13 +23,15 @@ class genCampaign {
    * @param string $version
    * @param string $with
    */
-  public function __construct ($url = '', $version = '', $with = '')
+  public function __construct ($url = '', $version = '', $token)
   {
+    if (empty($token)) {
+      throw new \InvalidArgumentException('token not provided');
+    } else {
+      $this->token = $token;
+    }
     $this->setUrl($url);
     $this->setVersion($version);
-    if (!empty($with)) {
-      $this->setWith($with);
-    }
     $this->client = new Client();
   }
 
@@ -81,16 +83,50 @@ class genCampaign {
 
   /**
    * @param $token
-   * @return Campaign
+   * @return collection
    */
-  public function getCampaigns ($token) {
+  public function getCampaigns ($with) { /** GET **/
+    if (!empty($with)) {
+      $this->setWith($with);
+    }
     $response = $this->client->request('GET', $this->url.'/'.$this->version.'/campaigns?with='.$this->with, ['headers' =>
       [
-        'Authorization' => "Bearer {$token}"
+        'Authorization' => "Bearer {$this->token}"
       ]
     ])
       ->getBody()
       ->getContents();
     return Collection::make(json_decode($response));
+  }
+
+  /**
+   * @param $body
+   * @method POST
+   * @return collection
+   *
+   */
+  public function createCampaign ($body) {
+    $body = json_encode ($body);
+    $response = $this->client->request ('POST', $this->url.'/'.$this->version.'/campaigns', ['headers' =>
+      [
+        'Authorization' => "Bearer {$this->token}"
+      ]
+    ],  ['json' => $body])
+      ->getBody()
+      ->getContents();
+    var_dump($response);
+    die();
+  }
+
+  public function getCampaign ($id) { /** GET **/
+
+  }
+
+  public function replaceCampaign () { /** PUT **/
+
+  }
+
+  public function deleteCampaign () { /** DEL **/
+
   }
 }
