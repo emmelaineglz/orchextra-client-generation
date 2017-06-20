@@ -21,7 +21,6 @@ class Campaigns {
    * Campaign constructor.
    * @param string $url
    * @param string $version
-   * @param string $with
    */
   public function __construct ($url = '', $version = '', $token)
   {
@@ -81,19 +80,28 @@ class Campaigns {
     return $this;
   }
 
+  /**
+   * @param $body
+   * @return array
+   */
   public function setBody($body) {
     $array = json_decode ($body);
     foreach ($array as $key=> $value){
-      echo $key . $value;
+      if($key === 'image'){
+        $formData []= ['Content-type' => 'multipart/form-data', 'name' => $key , 'contents' => fopen ($value, 'r')];
+      }else{
+        $formData []= ['name' => $key , 'contents' => $value];
+      }
     }
-    die();
+    return $formData;
   }
 
   /**
-   * @param $token
+   * @param $with
+   * @method GET
    * @return collection
    */
-  public function getCampaigns ($with) { /** GET **/
+  public function getCampaigns ($with) {
     if (!empty($with)) {
       $this->setWith($with);
     }
@@ -119,26 +127,19 @@ class Campaigns {
       'headers' => [
         'Authorization' => "Bearer {$this->token}"
       ],
-      'multipart' => [
-        [
-          'Content-type' => 'multipart/form-data',
-          'name' => 'image',
-          'contents' => fopen ('/home/ethelgonzalez/Imágenes/facebook_318-136394.jpg', 'r')
-        ],
-        [
-          'name' => 'name',
-          'contents' => 'campaña 7'
-        ],
-
-      ]
+      'multipart' => $body
     ])
       ->getBody()
       ->getContents();
-    var_dump ($response);
-    die();
+    return Collection::make (json_decode ($response));
   }
 
-  public function getCampaign ($id) { /** GET **/
+  /**
+   * @param $id
+   * @method GET
+   * @return collection
+   */
+  public function getCampaign ($id) {
     $response = $this->client->request('GET', $this->url.'/'.$this->version.'/campaigns/'.$id, ['headers' =>
       [
         'Authorization' => "Bearer {$this->token}"
@@ -146,11 +147,22 @@ class Campaigns {
     ])
       ->getBody()
       ->getContents();
-    var_dump (json_encode ($response));
     return Collection::make(json_decode($response));
   }
 
-  public function replaceCampaign () { /** PUT **/
+  public function replaceCampaign ($id, $body) { /** PUT **/
+  $body = json_decode($body);
+    $response = $this->client->request('PUT', $this->url.'/'.$this->version.'/campaigns/'.$id, ['headers' =>
+      [
+        'Authorization' => "Bearer {$this->token}"
+      ],
+      'json' =>  $body
+    ])
+      ->getBody()
+      ->getContents();
+    var_dump ($response);
+    die();
+    return Collection::make(json_decode($response));
 
   }
 
