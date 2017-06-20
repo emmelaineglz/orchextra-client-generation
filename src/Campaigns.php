@@ -81,6 +81,14 @@ class Campaigns {
     return $this;
   }
 
+  public function setBody($body) {
+    $array = json_decode ($body);
+    foreach ($array as $key=> $value){
+      echo $key . $value;
+    }
+    die();
+  }
+
   /**
    * @param $token
    * @return collection
@@ -106,20 +114,40 @@ class Campaigns {
    *
    */
   public function createCampaign ($body) {
-    $body = json_encode ($body);
-    $response = $this->client->request ('POST', $this->url.'/'.$this->version.'/campaigns', ['headers' =>
-      [
+    $body = $this->setBody ($body);
+    $response = $this->client->request ('POST', $this->url.'/'.$this->version.'/campaigns', [
+      'headers' => [
         'Authorization' => "Bearer {$this->token}"
+      ],
+      'multipart' => [
+        [
+          'Content-type' => 'multipart/form-data',
+          'name' => 'image',
+          'contents' => fopen ('/home/ethelgonzalez/Imágenes/facebook_318-136394.jpg', 'r')
+        ],
+        [
+          'name' => 'name',
+          'contents' => 'campaña 7'
+        ],
+
       ]
-    ],  ['json' => $body])
+    ])
       ->getBody()
       ->getContents();
-    var_dump($response);
+    var_dump ($response);
     die();
   }
 
   public function getCampaign ($id) { /** GET **/
-
+    $response = $this->client->request('GET', $this->url.'/'.$this->version.'/campaigns/'.$id, ['headers' =>
+      [
+        'Authorization' => "Bearer {$this->token}"
+      ]
+    ])
+      ->getBody()
+      ->getContents();
+    var_dump (json_encode ($response));
+    return Collection::make(json_decode($response));
   }
 
   public function replaceCampaign () { /** PUT **/
