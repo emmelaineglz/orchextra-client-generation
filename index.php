@@ -15,7 +15,6 @@ $collection = $campaign->getCampaigns ($jsonCampaign);
 print_r ($collection->all());
 */
 $body = '{
-    "image": "/home/ethelgonzalez/Imágenes/facebook_318-136394.jpg",
     "expirationDate": "2018-06-19",
     "startDate": "2017-06-19",
     "legals": "legales",
@@ -34,17 +33,25 @@ $id = '5941b62e3157b629aab3eaba';
 $collection3 = $campaign->getCampaign ($id);
 print_r ($collection3);
 
-*/
+
 $id = '5949a2a83157b629aab3eb2a';
 $collection5 = $campaign->replaceCampaign ($id, $body);
 print_r ($collection5);
-/*
+
+
 $collection4 = $channels->getChannels ($jsonChannels);
-print_r ($collection4->last());
+print_r ($collection4->last()->name);
+$bodyChannel = '{
+  "name" : "landing Ethel 1",
+  "type" : "landingPages",
+  "slug": "landing-ethel",
+  "campaignId" : "5941b6163157b629aab3eab9",
+  "stock": 100,
+  "clientId": "5942b9b63157b629aab3eabc",
+  "skinId": "59480e333157b629aab3eaeb"
+}';
+$collection6 = $channels->createChannel ($bodyChannel);
+print_r ($collection6['name']);
 */
-/**
-{
-"user": ["clients", "customers"],
-"project": ["users"]
-}
- **/
+$collection7 = $channels->getChannel ('594aa98f3157b629aab3eb2e');
+print_r ($collection7);

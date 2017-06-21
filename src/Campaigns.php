@@ -4,7 +4,8 @@ use Illuminate\Support\Collection as Collection;
 
 use GuzzleHttp\Client;
 
-class Campaigns {
+class Campaigns extends Generation
+{
   /**
    * @var string
    */
@@ -33,69 +34,6 @@ class Campaigns {
     $this->setVersion($version);
     $this->client = new Client();
   }
-
-  /**
-   * @param string $url
-   * @return $this
-   */
-  public function setUrl ($url)
-  {
-    if (empty($url)) {
-      throw new \InvalidArgumentException('The url is required');
-    }
-    $this->url = $url;
-    return $this;
-  }
-
-  /**
-   * @param float $version
-   * @return $this
-   */
-  public function setVersion ($version)
-  {
-    if (empty($version)) {
-      throw new \InvalidArgumentException('The version is required');
-    }
-    $this->version = $version;
-    return $this;
-  }
-
-  /**
-   * @param $with
-   * @return $this
-   * @internal param float $version
-   */
-  public function setWith ($with)
-  {
-    $arrayS = json_decode($with);
-    $filters = '';
-    foreach($arrayS as $key => $values) {
-      $filters .= $key;
-      foreach($values as $item) {
-        $filters .= '.'.$item;
-      }
-      $filters .= ',';
-    }
-    $this->with = trim($filters,',');
-    return $this;
-  }
-
-  /**
-   * @param $body
-   * @return array
-   */
-  public function setBody($body) {
-    $array = json_decode ($body);
-    foreach ($array as $key=> $value){
-      if($key === 'image'){
-        $formData []= ['Content-type' => 'multipart/form-data', 'name' => $key , 'contents' => fopen ($value, 'r')];
-      }else{
-        $formData []= ['name' => $key , 'contents' => $value];
-      }
-    }
-    return $formData;
-  }
-
   /**
    * @param $with
    * @method GET
@@ -150,6 +88,11 @@ class Campaigns {
     return Collection::make(json_decode($response));
   }
 
+  /**
+   * @param $id
+   * @param $body
+   * @return collection
+   */
   public function replaceCampaign ($id, $body) { /** PUT **/
   $body = json_decode($body);
     $response = $this->client->request('PUT', $this->url.'/'.$this->version.'/campaigns/'.$id, ['headers' =>
@@ -160,13 +103,22 @@ class Campaigns {
     ])
       ->getBody()
       ->getContents();
-    var_dump ($response);
-    die();
     return Collection::make(json_decode($response));
 
   }
 
-  public function deleteCampaign () { /** DEL **/
-
+  /**
+   * @param $id
+   * @return static
+   */
+  public function deleteCampaign ($id) {
+    $response = $this->client->request('DELETE', $this->url.'/'.$this->version.'/campaigns/'.$id, ['headers' =>
+      [
+        'Authorization' => "Bearer {$this->token}"
+      ]
+    ])
+      ->getBody()
+      ->getContents();
+    return Collection::make(json_decode($response));
   }
 }
