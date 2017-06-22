@@ -4,7 +4,7 @@ use Illuminate\Support\Collection as Collection;
 
 use GuzzleHttp\Client;
 
-class Campaigns extends Generation
+class Campaigns extends BaseCRUD
 {
   /**
    * @var string
@@ -33,6 +33,21 @@ class Campaigns extends Generation
     $this->setUrl($url);
     $this->setVersion($version);
     $this->client = new Client();
+  }
+  public function setUrl($url){
+    if (empty($url)) {
+      throw new \InvalidArgumentException('the url is required');
+    }
+    return $this->url = $url;
+
+  }
+
+  public function setVersion($version)
+  {
+    if (empty($version)) {
+      throw new \InvalidArgumentException('the version is required');
+    }
+    return $this->version = $version;
   }
   /**
    * @param $with
@@ -69,7 +84,7 @@ class Campaigns extends Generation
     ])
       ->getBody()
       ->getContents();
-    return Collection::make (json_decode ($response));
+    return Collection::make ([json_decode ($response)]);
   }
 
   /**
