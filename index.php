@@ -9,24 +9,36 @@ $token = $auth->getToken();
 $jsonCampaign = '{"user": ["clients", "customers"], "project": ["users"]}';
 $jsonChannels = '{"client": ["customers", "user"], "campaign": ["project"]}';
 $jsonClients = '{"customers": [], "user": ["clients"]}';
-$campaign = new Generation\Campaigns('https://generation-api-coupons.s.gigigoapps.com', 'v1', $token);
+$campaign = new Generation\Campaign('https://generation-api-coupons.s.gigigoapps.com', 'v1', $token);
 /*$channels = new Generation\Channels('https://generation-api-coupons.s.gigigoapps.com', 'v1', $token);
 $clients = new Generation\Clients('https://generation-api-coupons.s.gigigoapps.com', 'v1', $token);*/
 
-$collection = $campaign->getCampaigns (['with' => [
+$collection = $campaign->all (
+  [
+    'with' => [
   'user.clients',
   'user.clients.customers'
 ],
-  'field' => [
+  'fields' => [
     'name',
     'description'
-  ],
-  'search' => [
-    'name' => 'Ethel'
   ]
 ]);
-print_r ($collection->all());
-
+print_r ($collection->last()->getUser());
+/*
+$collection = $campaign->get ('594beb213157b629aab3eb5b');
+$collection->replace ([
+  'projectId' => '5949957e3157b629aab3eb28',
+  'name' => 'Ethel New Campaign',
+  'description' => 'Esto es una prueba',
+  'legals' => 'legales',
+  'type' => 'digital',
+  'startDate' => '2017-06-19T00:00:00.000Z',
+  'expirationDate' => '2018-06-19T00:00:00.000Z',
+  'image' => ['hola.jpg']
+  ]);
+*/
+/*
 $body = '{
     "expirationDate": "2018-06-19",
     "startDate": "2017-06-19",
@@ -38,7 +50,19 @@ $body = '{
     "name": "campaña Ethel",
     "image": "/home/ethelgonzalez/Imágenes/facebook_318-136394.jpg"}';
 
-/*
+
+ ['with' => [
+  'user.clients',
+  'user.clients.customers'
+],
+  'field' => [
+    'name',
+    'description'
+  ],
+  'search' => [
+    'name' => 'Ethel'
+  ]
+]
 $collection2 = $campaign->createCampaign ($body);
 print_r ($collection2->image);
 

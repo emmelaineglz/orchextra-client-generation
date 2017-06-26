@@ -1,23 +1,10 @@
 <?php
 namespace Gigigo\Orchextra\Generation;
-use Illuminate\Support\Collection as Collection;
-
 use GuzzleHttp\Client;
 
-class Campaigns extends BaseCRUD
+class Campaign extends BaseCRUD
 {
-  /**
-   * @var string
-   */
-  protected $url;
-  /**
-   * @var string
-   */
-  protected $version;
-  /**
-   * @var string
-   */
-  protected $with;
+  use Modeleable;
   /**
    * Campaign constructor.
    * @param string $url
@@ -33,47 +20,17 @@ class Campaigns extends BaseCRUD
     $this->setUrl($url);
     $this->setVersion($version);
     $this->client = new Client();
-  }
-  public function setUrl($url){
-    if (empty($url)) {
-      throw new \InvalidArgumentException('the url is required');
-    }
-    return $this->url = $url;
-
+    $this->entity = "campaigns";
   }
 
-  public function setVersion($version)
-  {
-    if (empty($version)) {
-      throw new \InvalidArgumentException('the version is required');
-    }
-    return $this->version = $version;
-  }
-  /**
-   * @param $with
-   * @method GET
-   * @return collection
-   */
-  public function getCampaigns ($with) {
-    if (!empty($with)) {
-      $this->setWith($with);
-    }
-    $response = $this->client->request('GET', $this->url.'/'.$this->version.'/campaigns?with='.$this->with, ['headers' =>
-      [
-        'Authorization' => "Bearer {$this->token}"
-      ]
-    ])
-      ->getBody()
-      ->getContents();
-    return Collection::make(json_decode($response));
-  }
 
-  /**
+
+  /*
    * @param $body
    * @method POST
    * @return collection
    *
-   */
+
   public function createCampaign ($body) {
     $body = $this->setBody ($body);
     $response = $this->client->request ('POST', $this->url.'/'.$this->version.'/campaigns', [
@@ -87,28 +44,12 @@ class Campaigns extends BaseCRUD
     return Collection::make ([json_decode ($response)]);
   }
 
-  /**
-   * @param $id
-   * @method GET
-   * @return collection
-   */
-  public function getCampaign ($id) {
-    $response = $this->client->request('GET', $this->url.'/'.$this->version.'/campaigns/'.$id, ['headers' =>
-      [
-        'Authorization' => "Bearer {$this->token}"
-      ]
-    ])
-      ->getBody()
-      ->getContents();
-    return Collection::make(json_decode($response));
-  }
 
-  /**
    * @param $id
    * @param $body
    * @return collection
-   */
-  public function replaceCampaign ($id, $body) { /** PUT **/
+
+  public function replaceCampaign ($id, $body) {
   $body = json_decode($body);
     $response = $this->client->request('PUT', $this->url.'/'.$this->version.'/campaigns/'.$id, ['headers' =>
       [
@@ -122,10 +63,10 @@ class Campaigns extends BaseCRUD
 
   }
 
-  /**
+
    * @param $id
    * @return static
-   */
+
   public function deleteCampaign ($id) {
     $response = $this->client->request('DELETE', $this->url.'/'.$this->version.'/campaigns/'.$id, ['headers' =>
       [
@@ -136,4 +77,5 @@ class Campaigns extends BaseCRUD
       ->getContents();
     return Collection::make(json_decode($response));
   }
+  */
 }
