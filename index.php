@@ -6,25 +6,27 @@ use Gigigo\Orchextra\Generation;
 $auth = new Auth('https://auth-api-coupons.s.gigigoapps.com');
 $client = $auth->authClient('qwerty', 'qwerty');
 $token = $auth->getToken();
-$jsonCampaign = '{"user": ["clients", "customers"], "project": ["users"]}';
-$jsonChannels = '{"client": ["customers", "user"], "campaign": ["project"]}';
-$jsonClients = '{"customers": [], "user": ["clients"]}';
+$skin = new Generation\Skin('https://generation-api-coupons.s.gigigoapps.com', 'v1', $token);
 $campaign = new Generation\Campaign('https://generation-api-coupons.s.gigigoapps.com', 'v1', $token);
-/*$channels = new Generation\Channels('https://generation-api-coupons.s.gigigoapps.com', 'v1', $token);
-$clients = new Generation\Clients('https://generation-api-coupons.s.gigigoapps.com', 'v1', $token);*/
+/*
+$collecSkin = $skin->all(['with' => ['users', 'users.clients']]);
+
+print_r ($collecSkin->first()->getUsers());*/
 
 $collection = $campaign->all (
   [
     'with' => [
-  'user.clients',
-  'user.clients.customers'
-],
-  'fields' => [
-    'name',
-    'description'
-  ]
-]);
-print_r ($collection->last()->getUser());
+      'channels',
+      'user.clients',
+      'user.clients.customers'
+    ],
+    'fields' => [
+      'name',
+      'description'
+    ]
+  ]);
+print_r ($collection->first()->getUser());
+
 /*
 $collection = $campaign->get ('594beb213157b629aab3eb5b');
 $collection->replace ([

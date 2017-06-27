@@ -5,10 +5,20 @@ use GuzzleHttp\Client;
 class Campaign extends BaseCRUD
 {
   use Modeleable;
+
+  protected $models = [
+    'user' => 'one',
+    'clients' => 'many',
+    'projects' => 'many',
+    'customers' => 'many',
+    'channels' => 'many'
+  ];
+
   /**
    * Campaign constructor.
    * @param string $url
    * @param string $version
+   * @param $token
    */
   public function __construct ($url = '', $version = '', $token)
   {
@@ -22,60 +32,4 @@ class Campaign extends BaseCRUD
     $this->client = new Client();
     $this->entity = "campaigns";
   }
-
-
-
-  /*
-   * @param $body
-   * @method POST
-   * @return collection
-   *
-
-  public function createCampaign ($body) {
-    $body = $this->setBody ($body);
-    $response = $this->client->request ('POST', $this->url.'/'.$this->version.'/campaigns', [
-      'headers' => [
-        'Authorization' => "Bearer {$this->token}"
-      ],
-      'multipart' => $body
-    ])
-      ->getBody()
-      ->getContents();
-    return Collection::make ([json_decode ($response)]);
-  }
-
-
-   * @param $id
-   * @param $body
-   * @return collection
-
-  public function replaceCampaign ($id, $body) {
-  $body = json_decode($body);
-    $response = $this->client->request('PUT', $this->url.'/'.$this->version.'/campaigns/'.$id, ['headers' =>
-      [
-        'Authorization' => "Bearer {$this->token}"
-      ],
-      'json' =>  $body
-    ])
-      ->getBody()
-      ->getContents();
-    return Collection::make(json_decode($response));
-
-  }
-
-
-   * @param $id
-   * @return static
-
-  public function deleteCampaign ($id) {
-    $response = $this->client->request('DELETE', $this->url.'/'.$this->version.'/campaigns/'.$id, ['headers' =>
-      [
-        'Authorization' => "Bearer {$this->token}"
-      ]
-    ])
-      ->getBody()
-      ->getContents();
-    return Collection::make(json_decode($response));
-  }
-  */
 }

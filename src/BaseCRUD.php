@@ -19,28 +19,27 @@ abstract class BaseCRUD
    * @var string
    */
   protected $with;
-
+  /**
+   * @var array
+   */
   protected $attributes = [];
-
+  /**
+   * @var $client
+   */
   protected $client;
+  /**
+   * @var $entity
+   */
   protected $entity;
+  /**
+   * @var $token
+   */
   protected $token;
 
-  /*
-
-  protected $client;
-
-
-   * BaseCRUD constructor.
-   * @param Client $client
-   * @param array $attributes
-
-  public function __construct(Client $client, array $attributes = [])
-  {
-    $this->client = $client;
-    $this->attributes = $attributes;
-  }
-*/
+  /**
+   * @param $url
+   * @return mixed
+   */
   public function setUrl($url){
     if (empty($url)) {
       throw new \InvalidArgumentException('the url is required');
@@ -49,6 +48,10 @@ abstract class BaseCRUD
 
   }
 
+  /**
+   * @param $version
+   * @return mixed
+   */
   public function setVersion($version)
   {
     if (empty($version)) {
@@ -57,6 +60,10 @@ abstract class BaseCRUD
     return $this->version = $version;
   }
 
+  /**
+   * @param $with
+   * @return $this
+   */
   public function setWith ($with)
   {
     $filters = '?';
@@ -71,6 +78,7 @@ abstract class BaseCRUD
     $this->with = trim($filters,',');
     return $this;
   }
+
   /**
    * @param $body
    * @return array
@@ -87,17 +95,31 @@ abstract class BaseCRUD
     return $formData;
   }
 
+  /**
+   * @param $url
+   * @param $version
+   * @param $token
+   * @param array $attributes
+   * @return static
+   */
   public static function createFromResponse($url, $version, $token, array $attributes = []){
     $instance = new static($url, $version, $token);
     $instance->fill ($attributes);
     return  $instance;
   }
+
+  /**
+   * @param array $attributes
+   */
   public function fill(array $attributes = [])
   {
     $this->attributes = $attributes;
   }
 
-
+  /**
+   * @param $id
+   * @return BaseCRUD
+   */
   public function get($id)
   {
     $response = $this->client->get("{$this->url}/{$this->version}/{$this->entity}/{$id}", ['headers' =>
@@ -110,6 +132,10 @@ abstract class BaseCRUD
     return static::createFromResponse ($this->url, $this->version, $this->token, json_decode ($response,true));
   }
 
+  /**
+   * @param $with
+   * @return Collection
+   */
   public function all($with)
   {
     $this->setWith ($with);
@@ -120,12 +146,17 @@ abstract class BaseCRUD
     ])
       ->getBody()
       ->getContents();
-      foreach(json_decode ($response, true) as $value) {
-        $res[] = static::createFromResponse ($this->url, $this->version, $this->token, $value);
-      }
-      return Collection::make ($res);
+    $collection = Collection::make();
+    foreach(json_decode ($response, true) as $value) {
+      $collection->push (static::createFromResponse ($this->url, $this->version, $this->token, $value));
+    }
+    return $collection;
   }
 
+  /**
+   * @param array $body
+   * @return BaseCRUD
+   */
   public function replace (array $body = []){
     $response = $this->client->put("{$this->url}/{$this->version}/{$this->entity}/{$this->attributes['id']}", ['headers' =>
       [
@@ -136,5 +167,51 @@ abstract class BaseCRUD
       ->getBody()
       ->getContents();
     return static::createFromResponse ($this->url, $this->version, $this->token, json_decode ($response,true));
+  }
+
+  /**
+   * @param $body
+   * @return BaseCRUD
+   */
+  public function create ($body) {
+    $response = $this->client->post ("{$this->url}/{$this->version}/{$this->entity}", [
+      'headers' => [
+        'Authorization' => "Bearer {$this->token}"
+      ],
+      'multipart' => $body
+    ])
+      ->getBody()
+      ->getContents();
+    return static::createFromResponse ($this->url, $this->version, $this->token, json_decode ($response,true));
+  }
+
+  /**
+   * @return BaseCRUD
+   */
+  public function delete () {
+    $response = $this->client->delete("{$this->url}/{$this->version}/{$this->entity}/{$this->attributes['id']}", ['headers' =>
+      [
+        'Authorization' => "Bearer {$this->token}"
+      ]
+    ])
+      ->getBody()
+      ->getContents();
+    return static::createFromResponse ($this->url, $this->version, $this->token, json_decode ($response,true));
+  }
+
+  /**
+   * @param $body
+   * @return BaseCRUD
+   */
+  public function update ($body) {
+    $response = $this->client->patch("{$this->url}/{$this->version}/{$this->entity}/{$this->attributes['id']}", ['headers' =>
+      [
+        'Authorization' => "Bearer {$this->token}"
+      ],
+      'json' => $body
+    ])
+      ->getBody()
+      ->getContents();
+    return static::createFromResponse ($this->url, $this->version, $this->token, json_decode ($response, true));
   }
 }

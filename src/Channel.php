@@ -1,16 +1,26 @@
 <?php
-
 namespace Gigigo\Orchextra\Generation;
-use Illuminate\Support\Collection as Collection;
-
 use GuzzleHttp\Client;
 
-
-class Channels extends Generation
+class Channel extends BaseCRUD
 {
-  protected $url;
-  protected $version;
-  protected $token;
+  use Modeleable;
+  /**
+   * @var array
+   */
+  protected $models = [
+    'client' => 'one',
+    'campaign' => 'one',
+    'customers' => 'many',
+    'user' => 'one'
+  ];
+
+  /**
+   * Channel constructor.
+   * @param string $url
+   * @param string $version
+   * @param $token
+   */
   public function __construct ($url = '', $version = '', $token)
   {
     if (empty($token)) {
@@ -21,78 +31,6 @@ class Channels extends Generation
     $this->setUrl($url);
     $this->setVersion($version);
     $this->client = new Client();
-  }
-
-  public function getChannels ($with) {
-    if (!empty($with)) {
-      $this->setWith($with);
-    }
-    $response = $this->client->request('GET', $this->url.'/'.$this->version.'/channels?with='.$this->with, ['headers' =>
-      [
-        'Authorization' => "Bearer {$this->token}"
-      ]
-    ])
-      ->getBody()
-      ->getContents();
-    return Collection::make(json_decode($response));
-  }
-
-  public function createChannel ($body) {
-    $body = json_decode ($body);
-    $response = $this->client->request('POST', $this->url.'/'.$this->version.'/channels', ['headers' =>
-      [
-        'Authorization' => "Bearer {$this->token}"
-      ],
-      'json' => $body
-    ])
-      ->getBody()
-      ->getContents();
-    return Collection::make(json_decode($response));
-  }
-
-  public function getChannel ($id) {
-    $response = $this->client->request('GET', $this->url.'/'.$this->version.'/channels/'.$id, ['headers' =>
-      [
-        'Authorization' => "Bearer {$this->token}"
-      ]
-    ])
-      ->getBody()
-      ->getContents();
-    return Collection::make(json_decode($response));
-  }
-
-  public function deleteChannel ($id) {
-    $response = $this->client->request('DELETE', $this->url.'/'.$this->version.'/channels/'.$id.'?envelopment=true', ['headers' =>
-      [
-        'Authorization' => "Bearer {$this->token}"
-      ]
-    ])
-      ->getBody()
-      ->getContents();
-    return Collection::make(json_decode($response));
-  }
-
-  public function updateChannel ($id) {
-    $response = $this->client->request('PATCH', $this->url.'/'.$this->version.'/channels/'.$id.'?envelopment=true', ['headers' =>
-      [
-        'Authorization' => "Bearer {$this->token}"
-      ]
-    ])
-      ->getBody()
-      ->getContents();
-    return Collection::make(json_decode($response));
-  }
-
-  public function replaceChannel ($id, $body) {
-    $body = json_decode ($body);
-    $response = $this->client->request('PUT', $this->url.'/'.$this->version.'/channels/'.$id.'?envelopment=true', ['headers' =>
-      [
-        'Authorization' => "Bearer {$this->token}"
-      ],
-      'json' => $body
-    ])
-      ->getBody()
-      ->getContents();
-    return Collection::make(json_decode($response));
+    $this->entity = "channels";
   }
 }

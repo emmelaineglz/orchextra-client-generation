@@ -1,16 +1,23 @@
 <?php
-
 namespace Gigigo\Orchextra\Generation;
-use Illuminate\Support\Collection as Collection;
-
 use GuzzleHttp\Client;
 
-
-class Customers extends Generation
+class Customer extends BaseCRUD
 {
-  protected $url;
-  protected $version;
-  protected $token;
+  use Modeleable;
+  /**
+   * @var array
+   */
+  protected $models = [
+    'user' => 'one',
+    'clients' => 'many'];
+
+  /**
+   * Customer constructor.
+   * @param string $url
+   * @param string $version
+   * @param $token
+   */
   public function __construct ($url = '', $version = '', $token)
   {
     if (empty($token)) {
@@ -21,41 +28,6 @@ class Customers extends Generation
     $this->setUrl($url);
     $this->setVersion($version);
     $this->client = new Client();
-  }
-
-  public function getCustomers ($with) {
-    if (!empty($with)) {
-      $this->setWith($with);
-    }
-    $response = $this->client->request('GET', $this->url.'/'.$this->version.'/customers?with='.$this->with, ['headers' =>
-      [
-        'Authorization' => "Bearer {$this->token}"
-      ]
-    ])
-      ->getBody()
-      ->getContents();
-    return Collection::make(json_decode($response));
-  }
-
-  public function getCustomer ($id) {
-    $response = $this->client->request('GET', $this->url.'/'.$this->version.'/customers/'.$id, ['headers' =>
-      [
-        'Authorization' => "Bearer {$this->token}"
-      ]
-    ])
-      ->getBody()
-      ->getContents();
-    return Collection::make(json_decode($response));
-  }
-
-  public function deleteCustomer ($id) {
-    $response = $this->client->request('DELETE', $this->url.'/'.$this->version.'/customers/'.$id.'?envelopment=true', ['headers' =>
-      [
-        'Authorization' => "Bearer {$this->token}"
-      ]
-    ])
-      ->getBody()
-      ->getContents();
-    return Collection::make(json_decode($response));
+    $this->entity = "customers";
   }
 }
