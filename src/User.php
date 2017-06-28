@@ -10,9 +10,8 @@ class User extends BaseCRUD
    * @var array
    */
   protected $models = [
-    'user' => 'one',
     'clients' => 'many',
-    'customers' => 'many'
+    'projects' => 'many'
   ];
 
   /**

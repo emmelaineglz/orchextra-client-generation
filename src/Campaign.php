@@ -8,9 +8,7 @@ class Campaign extends BaseCRUD
 
   protected $models = [
     'user' => 'one',
-    'clients' => 'many',
-    'projects' => 'many',
-    'customers' => 'many',
+    'project' => 'one',
     'channels' => 'many'
   ];
 

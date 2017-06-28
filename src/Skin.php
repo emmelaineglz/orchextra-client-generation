@@ -9,8 +9,7 @@ class Skin extends BaseCRUD
    * @var array
    */
   protected $models = [
-    'user' => 'one',
-    'clients' => 'many'
+    'user' => 'one'
   ];
 
   /**

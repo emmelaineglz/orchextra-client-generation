@@ -11,9 +11,7 @@ class Client extends BaseCRUD
    * @var array
    */
   protected $models = [
-    'user' => 'one',
-    'clients' => 'many',
-    'projects' => 'many',
+    'clients' => 'one',
     'customers' => 'many'
   ];
 

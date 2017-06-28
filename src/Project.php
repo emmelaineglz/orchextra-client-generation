@@ -9,8 +9,7 @@ class Project extends BaseCRUD
    * @var array
    */
   protected $models = [
-    'user' => 'many',
-    'clients' => 'many'
+    'users' => 'many'
   ];
 
   /**

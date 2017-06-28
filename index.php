@@ -16,16 +16,12 @@ print_r ($collecSkin->first()->getUsers());*/
 $collection = $campaign->all (
   [
     'with' => [
-      'channels',
-      'user.clients',
-      'user.clients.customers'
-    ],
-    'fields' => [
-      'name',
-      'description'
+      'user',
+      'project',
+      'channels'
     ]
   ]);
-print_r ($collection->first()->getUser());
+print_r ($collection->first()->getName());
 
 /*
 $collection = $campaign->get ('594beb213157b629aab3eb5b');

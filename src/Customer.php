@@ -9,8 +9,9 @@ class Customer extends BaseCRUD
    * @var array
    */
   protected $models = [
-    'user' => 'one',
-    'clients' => 'many'];
+    'project' => 'one',
+    'client' => 'one'
+  ];
 
   /**
    * Customer constructor.

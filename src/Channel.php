@@ -10,9 +10,7 @@ class Channel extends BaseCRUD
    */
   protected $models = [
     'client' => 'one',
-    'campaign' => 'one',
-    'customers' => 'many',
-    'user' => 'one'
+    'campaign' => 'one'
   ];
 
   /**
