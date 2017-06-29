@@ -3,8 +3,6 @@
 namespace Gigigo\Orchextra\Generation;
 use Illuminate\Support\Collection as Collection;
 
-use GuzzleHttp\Client;
-
 abstract class BaseCRUD
 {
   /**
@@ -35,7 +33,10 @@ abstract class BaseCRUD
    * @var $token
    */
   protected $token;
-
+  /**
+   * @var $body
+   */
+  protected $body;
   /**
    * @param $url
    * @return mixed
@@ -68,14 +69,22 @@ abstract class BaseCRUD
   {
     $filters = '?';
     foreach($with as $key => $values) {
-      $filters .= $key."=";
-      foreach($values as $item) {
-        $filters .= $item.',';
+      if($key !== "filter") {
+        $filters .= $key . "=";
+        foreach ($values as $item) {
+          $filters .= $item . ',';
+        }
+        $filters = trim ($filters, ',');
+        $filters .= '&';
+      }else{
+        foreach ($values as $item) {
+          $filters .= $item . '&';
+        }
+        $filters = trim ($filters, '&');
       }
-      $filters = trim($filters,',');
-      $filters .= '&';
     }
     $this->with = trim($filters,',');
+
     return $this;
   }
 
@@ -84,15 +93,18 @@ abstract class BaseCRUD
    * @return array
    */
   public function setBody($body) {
-    $array = json_decode ($body);
-    foreach ($array as $key=> $value){
+    foreach ($body as $key=> $value){
       if($key === 'image'){
         $formData []= ['Content-type' => 'multipart/form-data', 'name' => $key , 'contents' => fopen ($value, 'r')];
       }else{
         $formData []= ['name' => $key , 'contents' => $value];
       }
     }
-    return $formData;
+    return [
+      'headers' => [
+        'Authorization' => "Bearer {$this->token}"
+       ],
+      'multipart' => $formData];
   }
 
   /**
@@ -136,9 +148,9 @@ abstract class BaseCRUD
    * @param $with
    * @return Collection
    */
-  public function all($with)
+  public function all(array $parameters = [])
   {
-    $this->setWith ($with);
+    $this->setWith ($parameters);
     $response = $this->client->get("{$this->url}/{$this->version}/{$this->entity}{$this->with}", ['headers' =>
       [
         'Authorization' => "Bearer {$this->token}"
@@ -166,6 +178,7 @@ abstract class BaseCRUD
     ])
       ->getBody()
       ->getContents();
+
     return static::createFromResponse ($this->url, $this->version, $this->token, json_decode ($response,true));
   }
 
@@ -174,12 +187,17 @@ abstract class BaseCRUD
    * @return BaseCRUD
    */
   public function create ($body) {
-    $response = $this->client->post ("{$this->url}/{$this->version}/{$this->entity}", [
-      'headers' => [
-        'Authorization' => "Bearer {$this->token}"
-      ],
-      'multipart' => $body
-    ])
+    if($this->entity === "campaigns"){
+      $body = $this->setBody ($body);
+    }else{
+      $body = [
+        'headers' => [
+          'Authorization' => "Bearer {$this->token}"
+         ],
+        'json' => $body
+      ];
+    }
+    $response = $this->client->post ("{$this->url}/{$this->version}/{$this->entity}?envelopment=true", $body)
       ->getBody()
       ->getContents();
     return static::createFromResponse ($this->url, $this->version, $this->token, json_decode ($response,true));
@@ -189,14 +207,18 @@ abstract class BaseCRUD
    * @return BaseCRUD
    */
   public function delete () {
-    $response = $this->client->delete("{$this->url}/{$this->version}/{$this->entity}/{$this->attributes['id']}", ['headers' =>
+
+    $response = $this->client->delete("{$this->url}/{$this->version}/{$this->entity}/{$this->attributes['id']}?envelopment=true", ['headers' =>
       [
         'Authorization' => "Bearer {$this->token}"
       ]
     ])
       ->getBody()
       ->getContents();
-    return static::createFromResponse ($this->url, $this->version, $this->token, json_decode ($response,true));
+
+    $data = json_decode ($response);
+
+    return $data->status;
   }
 
   /**

@@ -6,36 +6,60 @@ use Gigigo\Orchextra\Generation;
 $auth = new Auth('https://auth-api-coupons.s.gigigoapps.com');
 $client = $auth->authClient('qwerty', 'qwerty');
 $token = $auth->getToken();
+//$token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwdWJsaWNJZCI6IjU5MmVlODQxYjQ2YzJjYmRjMmFjZTU4ZCIsIm5hbWUiOiJEYXNoYm9hcmQiLCJ0eXBlIjoiZ2VuZXJhdGlvbiIsImxhc3RSZXF1ZXN0IjoiMjAxNy0wNi0wN1QxNTozNjowOC45NTFaIiwiaWF0IjoxNDk2ODQ5NzY4fQ.oJZzkIyvDGrycnc1e91SDUzDdY-VZwdcHdIot6m7L7Y';
 $skin = new Generation\Skin('https://generation-api-coupons.s.gigigoapps.com', 'v1', $token);
 $campaign = new Generation\Campaign('https://generation-api-coupons.s.gigigoapps.com', 'v1', $token);
+$project = new Generation\Project('https://generation-api-coupons.s.gigigoapps.com', 'v1', $token);
 /*
-$collecSkin = $skin->all(['with' => ['users', 'users.clients']]);
-
-print_r ($collecSkin->first()->getUsers());*/
+$collection = $project->all ([
+  'with' => [
+    'users.clients'
+  ]
+]);
+print_r ($collection->first()->getUsers()->first()->getClients());
+*/
 
 $collection = $campaign->all (
   [
     'with' => [
       'user',
-      'project',
-      'channels'
+      'user.clients'
     ]
   ]);
-print_r ($collection->first()->getName());
+$valores = $collection->first()->toArray();
+$valores['name'] = 'Campaña de Prueba Ethel Replace';
+$valores['projectId'] = '59493e4b3157b629aab3eaf0';
+//print_r ($valores);
+print_r ($collection->first()->replace($valores));
 
 /*
-$collection = $campaign->get ('594beb213157b629aab3eb5b');
-$collection->replace ([
+$collection = $campaign->create ([
+  'projectId' => '5949934b3157b629aab3eb24',
+  'userId' => '592ee7d0b46c2cbdc2ace58c',
+  'name' => 'campaña Emme4',
+  'description' => 'campaña prueba',
+  'legals' => 'legales',
+  'type' => 'digital',
+  'startDate' => '2017-06-19',
+  'expirationDate' => '2018-06-19',
+  'image' => '/home/ethelgonzalez/Imágenes/facebook_318-136394.jpg']);
+print_r($collection->getStatus());
+*/
+/*
+$collection = $campaign->get ('5953f38b6c368c7358d0c2d7');
+$update = $collection->update(['name' => 'eeeeeee uuuuuuu']);
+print_r ($update);*/
+/*$collection->replace ([
   'projectId' => '5949957e3157b629aab3eb28',
-  'name' => 'Ethel New Campaign',
+  'name' => 'Emmelaine Campaign',
   'description' => 'Esto es una prueba',
   'legals' => 'legales',
   'type' => 'digital',
   'startDate' => '2017-06-19T00:00:00.000Z',
   'expirationDate' => '2018-06-19T00:00:00.000Z',
   'image' => ['hola.jpg']
-  ]);
-*/
+  ]);*/
+//print_r ($collection->delete ());
 /*
 $body = '{
     "expirationDate": "2018-06-19",

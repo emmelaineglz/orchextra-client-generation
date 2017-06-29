@@ -41,13 +41,14 @@ trait Modeleable{
       if(!isset($this->attributes[$name])){
         return null;
       }
+
       if(is_array($this->attributes[$name]) && !in_array ($name, array_keys ($this->models))){
-        echo "entre en coleccion simple";
         return new Collection($this->attributes[$name]);
       }
+
       if(is_array ($this->attributes[$name]) && $this->models[$name] === 'many') {
-        echo "entre en coleccion de instancias";
         $collection = Collection::make();
+
         foreach($this->attributes[$name] as $item){
             $collection->push ($this->createInstance ($modelNamespaced, $item));
         }
@@ -56,18 +57,29 @@ trait Modeleable{
 
         return $this->attributes[$name];
       }
-      echo "solo retornare una instancia simple";
+
       return $this->createInstance ($modelNamespaced, $this->attributes[$name]);
     }
 
     $name = strtolower(str_replace('set', '', $name));
+
     return $this->attributes[$name] = $arguments[0];
+  }
+
+  /**
+   * @param $name
+   *
+   * @return null
+   */
+  public function __get ($name)
+  {
+    return isset($this->attributes[$name]) ? $this->attributes[$name] : null;
   }
 
   /**
    * @return mixed
    */
-  public function getOriginalAttributes()
+  public function toArray()
   {
     return $this->attributes;
   }
