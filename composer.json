@@ -1,9 +1,9 @@
 {
-    "name": "emmelaineglz/orchextra-client-generation",
+    "name": "emmelaineglz/orchextra-coupons-generation",
     "type": "library",
-    "description": "SDK para Generación de OrchextraClient",
+    "description": "SDK para consumo de servicios de Generación de Cupones ",
     "keywords": ["cupones","orchextra","generation"],
-    "homepage": "https://github.com/emmelaineglz/orchextra-client-generation",
+    "homepage": "https://github.com/emmelaineglz/orchextra-coupons-generation",
     "license": "MIT",
     "authors": [
         {

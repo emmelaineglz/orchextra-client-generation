@@ -1,6 +1,7 @@
 <?php
 
 namespace Gigigo\Orchextra\Generation;
+use GuzzleHttp\Exception\ServerException;
 use Illuminate\Support\Collection as Collection;
 
 abstract class BaseCRUD
@@ -16,7 +17,7 @@ abstract class BaseCRUD
   /**
    * @var string
    */
-  protected $with;
+  protected $parameters;
   /**
    * @var array
    */
@@ -37,6 +38,18 @@ abstract class BaseCRUD
    * @var $body
    */
   protected $body;
+  /**
+   * @var array
+   */
+  protected $filters;
+  /**
+   * @var array
+   */
+  protected $fields;
+  /**
+   * @var array
+   */
+  protected $with;
   /**
    * @param $url
    * @return mixed
@@ -65,27 +78,28 @@ abstract class BaseCRUD
    * @param $with
    * @return $this
    */
-  public function setWith ($with)
+  public function setWith (array $with = [])
   {
-    $filters = '?';
-    foreach($with as $key => $values) {
-      if($key !== "filter") {
-        $filters .= $key . "=";
-        foreach ($values as $item) {
-          $filters .= $item . ',';
-        }
-        $filters = trim ($filters, ',');
-        $filters .= '&';
-      }else{
-        foreach ($values as $item) {
-          $filters .= $item . '&';
-        }
-        $filters = trim ($filters, '&');
+    $parameters = 'with=';
+      foreach ($with as $item) {
+        $parameters .= $item . ',';
       }
-    }
-    $this->with = trim($filters,',');
+    return $this->with = trim($parameters,',');
+  }
+  public function setFields(array $fields = []){
+    $parameters = 'fields=';
+      foreach ($fields as $item) {
+        $parameters .= $item . ',';
+      }
+    return $this->fields = trim($parameters,',');
+  }
 
-    return $this;
+  public function setFilters(array $filters = []){
+    $parameters = '';
+    foreach($filters as $key => $values) {
+      $parameters .= $key . "=" . $values . '&';
+    }
+    return $this->filters = trim($parameters,'&');
   }
 
   /**
@@ -143,15 +157,21 @@ abstract class BaseCRUD
       ->getContents();
     return static::createFromResponse ($this->url, $this->version, $this->token, json_decode ($response,true));
   }
-
+  public function parametersAll(array $parameters){
+    $paramAll = '?';
+    if(!isset($this->with) && isset($parameters['with'])){$paramAll .= $this->setWith ($parameters['with']) . "&";}else{$paramAll .= $this->with . "&";}
+    if(!isset($this->fields) && isset($parameters['fields'])){$paramAll .= $this->setFields ($parameters['fields']) . "&";}else{$paramAll .= $this->filters . "&";}
+    if(!isset($this->filters) && isset($parameters['filters'])){$paramAll .= $this->setFilters ($parameters['filters']) . "&";}else{$paramAll .= $this->filters . "&";}
+    $this->parameters = (trim($paramAll, '&')) === '?' ? '' : trim($paramAll, '&');
+  }
   /**
-   * @param $with
+   * @param array
    * @return Collection
    */
   public function all(array $parameters = [])
   {
-    $this->setWith ($parameters);
-    $response = $this->client->get("{$this->url}/{$this->version}/{$this->entity}{$this->with}", ['headers' =>
+    $this->parametersAll($parameters);
+    $response = $this->client->get("{$this->url}/{$this->version}/{$this->entity}{$this->parameters}", ['headers' =>
       [
         'Authorization' => "Bearer {$this->token}"
       ]
@@ -207,18 +227,25 @@ abstract class BaseCRUD
    * @return BaseCRUD
    */
   public function delete () {
+    try {
+      $response = $this->client->delete ("{$this->url}/{$this->version}/{$this->entity}/{$this->attributes['id']}?envelopment=true", ['headers' =>
+        [
+          'Authorization' => "Bearer {$this->token}"
+        ]
+      ])
+        ->getBody ()
+        ->getContents ();
 
-    $response = $this->client->delete("{$this->url}/{$this->version}/{$this->entity}/{$this->attributes['id']}?envelopment=true", ['headers' =>
-      [
-        'Authorization' => "Bearer {$this->token}"
-      ]
-    ])
-      ->getBody()
-      ->getContents();
+      $data = json_decode ($response);
 
-    $data = json_decode ($response);
-
-    return $data->status;
+      return $data->status;
+    }
+    catch (ClientException $e){
+      var_dump ($e);
+    }
+    catch (ServerException $e){
+      var_dump ($e);
+    }
   }
 
   /**
