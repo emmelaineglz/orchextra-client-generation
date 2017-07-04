@@ -35,18 +35,8 @@ $campaign->setWith ( [
     'user',
     'user.clients'
   ]);
-$collection = $campaign->all ([
-    'fields' => [
-      'name',
-      'description',
-      'user.email',
-      'user.clients.clientSecret'
-    ],
-    'filters' => [
-      'name' => 'Campaña de Prueba Ethel Replace 2',
-    ]
-  ]);
-print_r ($collection);
+$collection = $campaign->all ();
+print_r ($collection->firstPage ());
 /*
 $valores = $collection->first()->toArray();
 $valores['name'] = 'Campaña de Prueba Ethel Replace';

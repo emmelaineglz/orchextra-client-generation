@@ -1,6 +1,7 @@
 <?php
 
 namespace Gigigo\Orchextra\Generation;
+use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ServerException;
 use Illuminate\Support\Collection as Collection;
 
@@ -170,19 +171,30 @@ abstract class BaseCRUD
    */
   public function all(array $parameters = [])
   {
-    $this->parametersAll($parameters);
-    $response = $this->client->get("{$this->url}/{$this->version}/{$this->entity}{$this->parameters}", ['headers' =>
+    if(!isset($this->headers)){
+      $this->parametersAll($parameters);
+      $response = $this->client->get("{$this->url}/{$this->version}/{$this->entity}{$this->parameters}", ['headers' =>
+        [
+          'Authorization' => "Bearer {$this->token}"
+        ]
+      ]);
+      $headers = $response->getHeader('Link');
+      return new Paginator($this->url, $this->version, $this->token, $headers);
+    }
+    $this->client = new Client();
+    $response = $this->client->get("{$this->page}", ['headers' =>
       [
         'Authorization' => "Bearer {$this->token}"
       ]
-    ])
-      ->getBody()
-      ->getContents();
+    ]);
+    $body = $response->getBody();
+    $content = $body->getContents();
     $collection = Collection::make();
-    foreach(json_decode ($response, true) as $value) {
+    foreach(json_decode ($content, true) as $value) {
       $collection->push (static::createFromResponse ($this->url, $this->version, $this->token, $value));
     }
     return $collection;
+
   }
 
   /**
