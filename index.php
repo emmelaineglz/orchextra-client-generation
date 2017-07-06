@@ -35,8 +35,14 @@ $campaign->setWith ( [
     'user',
     'user.clients'
   ]);
+$campaign->setPagination ( [
+  'perPage' => 3,
+  'page' => 3
+] );
+print_r ($campaign->getTotalCount ());
 $collection = $campaign->all ();
-print_r ($collection->firstPage ());
+//print_r ($collection->attributes);
+print_r ($collection->first()->toArray());
 /*
 $valores = $collection->first()->toArray();
 $valores['name'] = 'Campaña de Prueba Ethel Replace';

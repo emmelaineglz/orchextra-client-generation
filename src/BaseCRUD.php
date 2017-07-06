@@ -1,7 +1,6 @@
 <?php
 
 namespace Gigigo\Orchextra\Generation;
-use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ServerException;
 use Illuminate\Support\Collection as Collection;
 
@@ -52,6 +51,14 @@ abstract class BaseCRUD
    */
   protected $with;
   /**
+   * @var array
+   */
+  protected $pagination;
+  /**
+   * @var array
+   */
+  protected $totalCount;
+  /**
    * @param $url
    * @return mixed
    */
@@ -101,6 +108,14 @@ abstract class BaseCRUD
       $parameters .= $key . "=" . $values . '&';
     }
     return $this->filters = trim($parameters,'&');
+  }
+
+  public function setPagination ( array $pagination = []){
+    $parameters = '';
+    foreach ($pagination as $key => $values){
+      $parameters .= $key . "=" . $values . "&";
+    }
+    return $this->pagination = trim($parameters,'&');
   }
 
   /**
@@ -160,9 +175,10 @@ abstract class BaseCRUD
   }
   public function parametersAll(array $parameters){
     $paramAll = '?';
-    if(!isset($this->with) && isset($parameters['with'])){$paramAll .= $this->setWith ($parameters['with']) . "&";}else{$paramAll .= $this->with . "&";}
-    if(!isset($this->fields) && isset($parameters['fields'])){$paramAll .= $this->setFields ($parameters['fields']) . "&";}else{$paramAll .= $this->filters . "&";}
-    if(!isset($this->filters) && isset($parameters['filters'])){$paramAll .= $this->setFilters ($parameters['filters']) . "&";}else{$paramAll .= $this->filters . "&";}
+    if(!isset($this->with) && isset($parameters['with'])){$paramAll .= $this->setWith ($parameters['with']) . "&";}elseif(isset($this->with)){$paramAll .= $this->with . "&";}
+    if(!isset($this->fields) && isset($parameters['fields'])){$paramAll .= $this->setFields ($parameters['fields']) . "&";}elseif(isset($this->fields)){$paramAll .= $this->fields . "&";}
+    if(!isset($this->filters) && isset($parameters['filters'])){$paramAll .= $this->setFilters ($parameters['filters']) . "&";}elseif(isset($this->filters)){$paramAll .= $this->filters . "&";}
+    if(!isset($this->pagination) && isset($parameters['pagination'])){$paramAll .= $this->setPagination ($parameters['pagination']) . "&";}elseif(isset($this->pagination)){$paramAll .= $this->pagination . "&";}
     $this->parameters = (trim($paramAll, '&')) === '?' ? '' : trim($paramAll, '&');
   }
   /**
@@ -171,24 +187,17 @@ abstract class BaseCRUD
    */
   public function all(array $parameters = [])
   {
-    if(!isset($this->headers)){
       $this->parametersAll($parameters);
       $response = $this->client->get("{$this->url}/{$this->version}/{$this->entity}{$this->parameters}", ['headers' =>
         [
           'Authorization' => "Bearer {$this->token}"
         ]
       ]);
-      $headers = $response->getHeader('Link');
-      return new Paginator($this->url, $this->version, $this->token, $headers);
-    }
-    $this->client = new Client();
-    $response = $this->client->get("{$this->page}", ['headers' =>
-      [
-        'Authorization' => "Bearer {$this->token}"
-      ]
-    ]);
-    $body = $response->getBody();
-    $content = $body->getContents();
+      $totalCount = $response->getHeader('X-total-count');
+      $this->totalCount = $totalCount[0];
+      $body = $response->getBody();
+      $content = $body->getContents();
+
     $collection = Collection::make();
     foreach(json_decode ($content, true) as $value) {
       $collection->push (static::createFromResponse ($this->url, $this->version, $this->token, $value));
@@ -276,3 +285,4 @@ abstract class BaseCRUD
     return static::createFromResponse ($this->url, $this->version, $this->token, json_decode ($response, true));
   }
 }
+

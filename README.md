@@ -39,15 +39,30 @@ $token = $auth->getToken();
 $campaign = new Generation\Campaign('https://ejemplo.com.mx', 'v1', $token);
 ```
 
-## Ya con la intancia, podemos acceder a sus metodos.
+## Ya con la intancia, podemos acceder a sus metodos, para settera nuestros parametros, se puede hacer uso de los setters o enviar un arreglo que contenga lo que necesitamos.
 
 ```php
 $campaign->setWith ( [
     'user',
     'user.clients'
   ]);
-  
+$campaign->setFields ( [
+    'name',
+    'description'
+  ]);
+$campaign->setFilters ( [
+    'name' => 'Campaña 1',
+    'description' => 'Campaña de promoción'
+  ]);
+$campaign->setPagination ( [
+  'perPage' => 3,
+  'page' => 2
+]);
 $collection = $campaign->all ([
+    'with' => [
+      'user',
+      'user.clients'
+    ],
     'fields' => [
       'name',
       'description',
@@ -56,7 +71,11 @@ $collection = $campaign->all ([
     ],
     'filters' => [
       'name' => 'Campaña de Prueba Ethel Replace 2',
-    ]
+    ],
+    'pagination' => [
+        'perPage' => 3
+        'page' => 2
+        ]
   ]);
 ```
 
