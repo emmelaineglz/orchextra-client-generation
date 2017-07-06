@@ -73,7 +73,7 @@ trait Modeleable
    *
    * @return null
    */
-  public function __get ($name)
+  public function __get($name)
   {
       return isset($this->attributes[$name]) ? $this->attributes[$name] : null;
   }
@@ -81,12 +81,15 @@ trait Modeleable
   /**
    * @return mixed
    */
-  public function toArray ()
+  public function toArray()
   {
       return $this->attributes;
   }
 
-  public function getTotalCount ()
+  /**
+   * @return mixed
+   */
+  public function getTotalCount()
   {
       return $this->totalCount;
   }

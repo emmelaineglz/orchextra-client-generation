@@ -1,12 +1,13 @@
 <?php
 
 namespace Gigigo\Orchextra\Generation;
+
 use GuzzleHttp\Exception\ServerException;
 use Illuminate\Support\Collection as Collection;
 
 abstract class BaseCRUD
 {
-  /**
+    /**
    * @var string
    */
   protected $url;
@@ -62,12 +63,12 @@ abstract class BaseCRUD
    * @param $url
    * @return mixed
    */
-  public function setUrl($url){
-    if (empty($url)) {
-      throw new \InvalidArgumentException('the url is required');
-    }
-    return $this->url = $url;
-
+  public function setUrl($url)
+  {
+      if (empty($url)) {
+          throw new \InvalidArgumentException('the url is required');
+      }
+      return $this->url = $url;
   }
 
   /**
@@ -76,61 +77,78 @@ abstract class BaseCRUD
    */
   public function setVersion($version)
   {
-    if (empty($version)) {
-      throw new \InvalidArgumentException('the version is required');
-    }
-    return $this->version = $version;
+      if (empty($version)) {
+          throw new \InvalidArgumentException('the version is required');
+      }
+      return $this->version = $version;
   }
 
   /**
    * @param $with
    * @return $this
    */
-  public function setWith (array $with = [])
+  public function setWith(array $with = [])
   {
-    $parameters = 'with=';
+      $parameters = 'with=';
       foreach ($with as $item) {
-        $parameters .= $item . ',';
+          $parameters .= $item . ',';
       }
-    return $this->with = trim($parameters,',');
+      return $this->with = trim($parameters, ',');
   }
-  public function setFields(array $fields = []){
-    $parameters = 'fields=';
+
+  /**
+   * @param array $fields
+   * @return string
+   */
+  public function setFields(array $fields = [])
+  {
+      $parameters = 'fields=';
       foreach ($fields as $item) {
-        $parameters .= $item . ',';
+          $parameters .= $item . ',';
       }
-    return $this->fields = trim($parameters,',');
+      return $this->fields = trim($parameters, ',');
   }
 
-  public function setFilters(array $filters = []){
-    $parameters = '';
-    foreach($filters as $key => $values) {
-      $parameters .= $key . "=" . $values . '&';
-    }
-    return $this->filters = trim($parameters,'&');
+  /**
+   * @param array $filters
+   * @return string
+   */
+  public function setFilters(array $filters = [])
+  {
+      $parameters = '';
+      foreach ($filters as $key => $values) {
+          $parameters .= $key . "=" . $values . '&';
+      }
+      return $this->filters = trim($parameters, '&');
   }
 
-  public function setPagination ( array $pagination = []){
-    $parameters = '';
-    foreach ($pagination as $key => $values){
-      $parameters .= $key . "=" . $values . "&";
-    }
-    return $this->pagination = trim($parameters,'&');
+  /**
+   * @param array $pagination
+   * @return string
+   */
+  public function setPagination(array $pagination = [])
+  {
+      $parameters = '';
+      foreach ($pagination as $key => $values) {
+          $parameters .= $key . "=" . $values . "&";
+      }
+      return $this->pagination = trim($parameters, '&');
   }
 
   /**
    * @param $body
    * @return array
    */
-  public function setBody($body) {
-    foreach ($body as $key=> $value){
-      if($key === 'image'){
-        $formData []= ['Content-type' => 'multipart/form-data', 'name' => $key , 'contents' => fopen ($value, 'r')];
-      }else{
-        $formData []= ['name' => $key , 'contents' => $value];
+  public function setBody($body)
+  {
+      foreach ($body as $key=> $value) {
+          if ($key === 'image') {
+              $formData []= ['Content-type' => 'multipart/form-data', 'name' => $key , 'contents' => fopen($value, 'r')];
+          } else {
+              $formData []= ['name' => $key , 'contents' => $value];
+          }
       }
-    }
-    return [
+      return [
       'headers' => [
         'Authorization' => "Bearer {$this->token}"
        ],
@@ -144,10 +162,11 @@ abstract class BaseCRUD
    * @param array $attributes
    * @return static
    */
-  public static function createFromResponse($url, $version, $token, array $attributes = []){
-    $instance = new static($url, $version, $token);
-    $instance->fill ($attributes);
-    return  $instance;
+  public static function createFromResponse($url, $version, $token, array $attributes = [])
+  {
+      $instance = new static($url, $version, $token);
+      $instance->fill($attributes);
+      return  $instance;
   }
 
   /**
@@ -155,7 +174,7 @@ abstract class BaseCRUD
    */
   public function fill(array $attributes = [])
   {
-    $this->attributes = $attributes;
+      $this->attributes = $attributes;
   }
 
   /**
@@ -164,23 +183,45 @@ abstract class BaseCRUD
    */
   public function get($id)
   {
-    $response = $this->client->get("{$this->url}/{$this->version}/{$this->entity}/{$id}", ['headers' =>
+      $response = $this->client->get("{$this->url}/{$this->version}/{$this->entity}/{$id}", ['headers' =>
       [
         'Authorization' => "Bearer {$this->token}"
       ]
     ])
       ->getBody()
       ->getContents();
-    return static::createFromResponse ($this->url, $this->version, $this->token, json_decode ($response,true));
+      return static::createFromResponse($this->url, $this->version, $this->token, json_decode($response, true));
   }
-  public function parametersAll(array $parameters){
-    $paramAll = '?';
-    if(!isset($this->with) && isset($parameters['with'])){$paramAll .= $this->setWith ($parameters['with']) . "&";}elseif(isset($this->with)){$paramAll .= $this->with . "&";}
-    if(!isset($this->fields) && isset($parameters['fields'])){$paramAll .= $this->setFields ($parameters['fields']) . "&";}elseif(isset($this->fields)){$paramAll .= $this->fields . "&";}
-    if(!isset($this->filters) && isset($parameters['filters'])){$paramAll .= $this->setFilters ($parameters['filters']) . "&";}elseif(isset($this->filters)){$paramAll .= $this->filters . "&";}
-    if(!isset($this->pagination) && isset($parameters['pagination'])){$paramAll .= $this->setPagination ($parameters['pagination']) . "&";}elseif(isset($this->pagination)){$paramAll .= $this->pagination . "&";}
-    $this->parameters = (trim($paramAll, '&')) === '?' ? '' : trim($paramAll, '&');
+
+  /**
+   * @param array $parameters
+   */
+  public function parametersAll(array $parameters)
+  {
+      $paramAll = '?';
+      if (!isset($this->with) && isset($parameters['with'])) {
+          $paramAll .= $this->setWith($parameters['with']) . "&";
+      } elseif (isset($this->with)) {
+          $paramAll .= $this->with . "&";
+      }
+      if (!isset($this->fields) && isset($parameters['fields'])) {
+          $paramAll .= $this->setFields($parameters['fields']) . "&";
+      } elseif (isset($this->fields)) {
+          $paramAll .= $this->fields . "&";
+      }
+      if (!isset($this->filters) && isset($parameters['filters'])) {
+          $paramAll .= $this->setFilters($parameters['filters']) . "&";
+      } elseif (isset($this->filters)) {
+          $paramAll .= $this->filters . "&";
+      }
+      if (!isset($this->pagination) && isset($parameters['pagination'])) {
+          $paramAll .= $this->setPagination($parameters['pagination']) . "&";
+      } elseif (isset($this->pagination)) {
+          $paramAll .= $this->pagination . "&";
+      }
+      $this->parameters = (trim($paramAll, '&')) === '?' ? '' : trim($paramAll, '&');
   }
+
   /**
    * @param array
    * @return Collection
@@ -198,20 +239,20 @@ abstract class BaseCRUD
       $body = $response->getBody();
       $content = $body->getContents();
 
-    $collection = Collection::make();
-    foreach(json_decode ($content, true) as $value) {
-      $collection->push (static::createFromResponse ($this->url, $this->version, $this->token, $value));
-    }
-    return $collection;
-
+      $collection = Collection::make();
+      foreach (json_decode($content, true) as $value) {
+          $collection->push(static::createFromResponse($this->url, $this->version, $this->token, $value));
+      }
+      return $collection;
   }
 
   /**
    * @param array $body
    * @return BaseCRUD
    */
-  public function replace (array $body = []){
-    $response = $this->client->put("{$this->url}/{$this->version}/{$this->entity}/{$this->attributes['id']}", ['headers' =>
+  public function replace(array $body = [])
+  {
+      $response = $this->client->put("{$this->url}/{$this->version}/{$this->entity}/{$this->attributes['id']}", ['headers' =>
       [
         'Authorization' => "Bearer {$this->token}"
       ],
@@ -220,61 +261,62 @@ abstract class BaseCRUD
       ->getBody()
       ->getContents();
 
-    return static::createFromResponse ($this->url, $this->version, $this->token, json_decode ($response,true));
+      return static::createFromResponse($this->url, $this->version, $this->token, json_decode($response, true));
   }
 
   /**
    * @param $body
    * @return BaseCRUD
    */
-  public function create ($body) {
-    if($this->entity === "campaigns"){
-      $body = $this->setBody ($body);
-    }else{
-      $body = [
+  public function create($body)
+  {
+      if ($this->entity === "campaigns") {
+          $body = $this->setBody($body);
+      } else {
+          $body = [
         'headers' => [
           'Authorization' => "Bearer {$this->token}"
          ],
         'json' => $body
       ];
-    }
-    $response = $this->client->post ("{$this->url}/{$this->version}/{$this->entity}?envelopment=true", $body)
+      }
+      $response = $this->client->post("{$this->url}/{$this->version}/{$this->entity}?envelopment=true", $body)
       ->getBody()
       ->getContents();
-    return static::createFromResponse ($this->url, $this->version, $this->token, json_decode ($response,true));
+      return static::createFromResponse($this->url, $this->version, $this->token, json_decode($response, true));
   }
 
   /**
    * @return BaseCRUD
    */
-  public function delete () {
-    try {
-      $response = $this->client->delete ("{$this->url}/{$this->version}/{$this->entity}/{$this->attributes['id']}?envelopment=true", ['headers' =>
+  public function delete()
+  {
+      try {
+          $response = $this->client->delete("{$this->url}/{$this->version}/{$this->entity}/{$this->attributes['id']}?envelopment=true", ['headers' =>
         [
           'Authorization' => "Bearer {$this->token}"
         ]
       ])
-        ->getBody ()
-        ->getContents ();
+        ->getBody()
+        ->getContents();
 
-      $data = json_decode ($response);
+          $data = json_decode($response);
 
-      return $data->status;
-    }
-    catch (ClientException $e){
-      var_dump ($e);
-    }
-    catch (ServerException $e){
-      var_dump ($e);
-    }
+          return $data->status;
+      } catch (ClientException $e) {
+          var_dump($e);
+      } catch (ServerException $e) {
+          var_dump($e);
+      }
   }
 
   /**
    * @param $body
    * @return BaseCRUD
    */
-  public function update ($body) {
-    $response = $this->client->patch("{$this->url}/{$this->version}/{$this->entity}/{$this->attributes['id']}", ['headers' =>
+  public function update($body)
+  {
+      $response = $this->client->patch("{$this->url}/{$this->version}/{$this->entity}/{$this->attributes['id']}", ['headers' =>
       [
         'Authorization' => "Bearer {$this->token}"
       ],
@@ -282,7 +324,6 @@ abstract class BaseCRUD
     ])
       ->getBody()
       ->getContents();
-    return static::createFromResponse ($this->url, $this->version, $this->token, json_decode ($response, true));
+      return static::createFromResponse($this->url, $this->version, $this->token, json_decode($response, true));
   }
 }
-
