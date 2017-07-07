@@ -1,16 +1,20 @@
 <?php
 require "vendor/autoload.php";
+
 use Gigigo\Orchextra\Auth;
 use Gigigo\Orchextra\Generation;
+use GuzzleHttp\Client;
+
+$clientHttp = new Client;
 
 $auth = new Auth('https://auth-api-coupons.s.gigigoapps.com');
-$client = $auth->authClient('qwerty', 'qwerty');
+$auth->authClient('qwerty', 'qwerty');
 $token = $auth->getToken();
 //$token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwdWJsaWNJZCI6IjU5MmVlODQxYjQ2YzJjYmRjMmFjZTU4ZCIsIm5hbWUiOiJEYXNoYm9hcmQiLCJ0eXBlIjoiZ2VuZXJhdGlvbiIsImxhc3RSZXF1ZXN0IjoiMjAxNy0wNi0wN1QxNTozNjowOC45NTFaIiwiaWF0IjoxNDk2ODQ5NzY4fQ.oJZzkIyvDGrycnc1e91SDUzDdY-VZwdcHdIot6m7L7Y';
-$skin = new Generation\Skin('https://generation-api-coupons.s.gigigoapps.com', 'v1', $token);
+//$skin = new Generation\Skin('https://generation-api-coupons.s.gigigoapps.com', 'v1', $token);
 $campaign = new Generation\Campaign('https://generation-api-coupons.s.gigigoapps.com', 'v1', $token);
-$project = new Generation\Project('https://generation-api-coupons.s.gigigoapps.com', 'v1', $token);
-$channel = new Generation\Channel('https://generation-api-coupons.s.gigigoapps.com', 'v1', $token);
+//$project = new Generation\Project('https://generation-api-coupons.s.gigigoapps.com', 'v1', $token);
+//$channel = new Generation\Channel('https://generation-api-coupons.s.gigigoapps.com', 'v1', $token);
 /*
 $createChannel = $channel->create([
   'name' => 'landing Ethel',
@@ -31,18 +35,15 @@ $collection = $project->all ([
 ]);
 print_r ($collection->first()->getUsers()->first()->getClients());
 */
-$campaign->setWith ( [
-    'user',
-    'user.clients'
-  ]);
-$campaign->setPagination ( [
-  'perPage' => 3,
-  'page' => 3
-] );
-print_r ($campaign->getTotalCount ());
-$collection = $campaign->all ();
+$campaigns = $campaign->setWith(['user', 'user.clients'])
+    ->setPagination(true, 1)
+    ->setEnvelopment(true)
+    ->all();
+
+
+print_r($campaigns);
 //print_r ($collection->attributes);
-print_r ($collection->first()->toArray());
+//print_r ($collection->first()->toArray());
 /*
 $valores = $collection->first()->toArray();
 $valores['name'] = 'Campaña de Prueba Ethel Replace';
