@@ -1,93 +1,86 @@
 <?php
 
-namespace Gigigo\Orchextra\Generation;
-
-use GuzzleHttp\Client;
-
-class Paginator extends BaseCRUD
+class Paginator
 {
     /**
-   * @var
-   */
-    protected $headers;
+     * @var array
+     */
+    protected $items;
 
-  /**
-   * @var
-   */
-    protected $response;
+    /**
+     * @var int
+     */
+    protected $total;
 
-  /**
-   * @var
-   */
-    protected $newArray;
+    /**
+     * @var int
+     */
+    protected $perPage;
 
-  /**
-   * Paginator constructor.
-   * @param $url
-   * @param $version
-   * @param $token
-   * @param array $headers
-   */
-    public function __construct($url, $version, $token, array $headers)
+    /**
+     * @var int
+     */
+    protected $currentPage;
+
+    /**
+     * @param array $items
+     * @param int $total
+     * @param int $currentPage
+     * @param int $perPage
+     */
+    public function __construct(array $items, $total, $currentPage, $perPage = 15)
     {
-        $this->token = $token;
-        $this->url = $url;
-        $this->version = $version;
-        $this->headers = $headers;
-        $this->client = new Client();
-        foreach ($this->headers as $item) {
-            $newString = $this->clean($item);
-            $newValor = explode(';', $newString);
-            var_dump($newValor);
-            $newArray[$newValor[1]] = $newValor[0];
-        }
-        $this->headers = $newArray;
-        $this->firstPage();
+        $this->items = $items;
+        $this->perPage = $perPage;
+        $this->currentPage = $currentPage;
+        $this->total = $total;
     }
 
-  /**
-   * @param $string
-   * @return mixed
-   */
-    public function clean($string)
+    /**
+     * @return array
+     */
+    public function getItems()
     {
-        $string = str_replace('"', '', $string);
-        $string = str_replace(' ', '', $string);
-        $string = str_replace('rel=', '', $string);
-        $string = str_replace('<', '', $string);
-        $string = str_replace('>', '', $string);
-        return $string;
+        return $this->items;
     }
 
-  /**
-   * @return \Illuminate\Support\Collection
-   */
-    public function firstPage()
+    /**
+     * @inheritdoc
+     */
+    public function getCurrentPage()
     {
-        if (array_key_exists('first', $this->headers)) {
-            $this->page = $this->headers['first'];
-        }
-        return $this->all();
+        return $this->currentPage;
     }
 
-  /**
-   *
-   */
-    public function nextPage()
+    /**
+     * @inheritdoc
+     */
+    public function getLastPage()
     {
+        return ceil($this->total / $this->perPage);
     }
 
-  /**
-   *
-   */
-    public function lastPage()
+    /**
+     * @inheritdoc
+     */
+    public function getTotal()
     {
+        return $this->total;
     }
 
-  /**
-   *
-   */
-    public function prev()
+    /**
+     * @inheritdoc
+     */
+    public function getCount()
     {
+        return count($this->items);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getPerPage()
+    {
+        return $this->perPage;
     }
 }

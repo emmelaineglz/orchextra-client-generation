@@ -1,34 +1,44 @@
 <?php
-namespace Gigigo\Orchextra\Generation;
 
-use GuzzleHttp\Client;
+namespace Gigigo\Orchextra\Generation;
 
 class Project extends BaseCRUD
 {
     use Modeleable;
-  /**
-   * @var array
-   */
-  protected $models = [
-    'users' => 'many'
-  ];
 
-  /**
-   * Project constructor.
-   * @param string $url
-   * @param string $version
-   * @param $token
-   */
-  public function __construct($url = '', $version = '', $token)
-  {
-      if (empty($token)) {
-          throw new \InvalidArgumentException('the token is required');
-      } else {
-          $this->token = $token;
-      }
-      $this->setUrl($url);
-      $this->setVersion($version);
-      $this->client = new Client();
-      $this->entity = "projects";
-  }
+    /**
+     * @var array
+     */
+    protected $models = [
+        'users' => 'many'
+    ];
+
+    /**
+     * @var string
+     */
+    protected $entity = 'projects';
+
+    /**
+     * Campaign constructor.
+     * @param $url
+     * @param $version
+     * @param $token
+     */
+    public function __construct($url, $version, $token)
+    {
+        parent::__construct($url, $version);
+        $this->setup($token);
+    }
+
+    /**
+     * @param $token
+     */
+    private function setup($token)
+    {
+        parent::setClient(new \GuzzleHttp\Client([
+            'headers' => [
+                'Authorization' => "Bearer {$token}"
+            ]
+        ]));
+    }
 }
